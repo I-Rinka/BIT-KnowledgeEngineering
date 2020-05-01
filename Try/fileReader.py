@@ -25,13 +25,16 @@ class fileReader:
         return "file:%s\nstart:%s\nend:%s\n" % (self.fileName, self.startDate, self.endDate)
 
 # 功能函数：
-    def VocProcess(self):
+    def ProcessWord(self):
         """读取文件一行，将一行中的数据处理为二维列表|返回值：二维列表，二维列表的第二个属性为词性|当返回值为**时代表读到了结尾"""
         line = self.__f.readline()
         splt = line.split('  ')
         out = []
         for v in splt:
-            out.append([v[0:v.find('/')], v[v.find('/'):]])
+            if v[0]=='[':
+                out.append([v[1:v.find('/')], v[v.find('/'):]])
+            else:
+                out.append([v[0:v.find('/')], v[v.find('/'):]])
         return out
 
     def GetEntity(self):
@@ -59,11 +62,26 @@ class fileReader:
         while not line.startswith(start):
             line = self.__f.readline()
         return
-            
+
+    #建立字典(字典需要用已有的，输入的二元组也是已有的)，统计词频    
+    def UpdateDic(self,Dic,wordList):
+        for word in wordList:
+            if '/n' in word[1]:
+                if not word[0] in Dic:
+                    Dic[word[0]]=1
+                else:
+                    Dic[word[0]]=Dic[word[0]]+1
+        return Dic
+
 
 p1 = fileReader(
     R'C:\Users\I_Rin\Documents\Dev\KnowledgeEn\One\data/1998-01-2003版-带音.txt', "19980101", "19980120")
 # p1.LocateStart("19980101-01-001-013")
-for i in range(10):
-    print(p1.GetEntity())
-    # print(p1.VocProcess())
+dic={}
+for i in range(10000):
+    # p1.GetEntity()
+    t=p1.ProcessWord()
+    p1.UpdateDic(dic,t)
+
+print(dic)
+    # print(p1.ProcessWord())
