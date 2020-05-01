@@ -21,11 +21,11 @@ class OneHotBuilder:
         self.fileName = fileName
         self.startDate = startDate
         self.endDate = endDate
+        # self.topList=[]
+        self.oneHotDic = {}
         self.__f = open(self.fileName, "r")
         self.__dic1 = {}
-        self.OneHotDic = {}
-        self.Run()
-        # self.topList=[]
+        self.__Run()
 
     def __str__(self):
         return "file:%s\nstart:%s\nend:%s\n" % (self.fileName, self.startDate, self.endDate)
@@ -74,7 +74,7 @@ class OneHotBuilder:
                     Dic[word[0]] = Dic[word[0]]+1
         return Dic
 
-    def Run(self):
+    def __Run(self):
         switch = False
         switch2 = False
         while True:
@@ -94,21 +94,21 @@ class OneHotBuilder:
         self.topList.sort(key=lambda parameter_list: parameter_list[1],reverse=True)
         ran=min(self.demension-1,len(self.topList))
         for i in range(ran):
-            self.OneHotDic[self.topList[i][0]]=i
-        self.OneHotDic['UNKNOWN']=ran
+            self.oneHotDic[self.topList[i][0]]=i
+        self.oneHotDic['UNKNOWN']=ran
         return
 
     def GetDemension(self,word):
-        """输入：需要得到对应onehot向量下标的字符|返回：onehot向量维度"""
-        if word in self.OneHotDic:
-            return self.OneHotDic[word]
+        """输入：需要得到对应onehot向量下标的字符|返回：onehot向量的维度"""
+        if word in self.oneHotDic:
+            return self.oneHotDic[word]
         else:
-            return self.OneHotDic['UNKNOWN']
+            return self.oneHotDic['UNKNOWN']
         
 
-p1 = OneHotBuilder(
-    R'C:\Users\I_Rin\Documents\Dev\KnowledgeEn\One\data/1998-01-2003版-带音.txt', "19980101", "19980120")
-print(p1.OneHotDic)
-print(p1.GetDemension('UNKNOWN'))
-for i in range(100):
-    print(p1.topList[i])
+# p1 = OneHotBuilder(
+#     R'C:\Users\I_Rin\Documents\Dev\KnowledgeEn\One\data/1998-01-2003版-带音.txt', "19980101", "19980120")
+# print(p1.oneHotDic)
+# print(p1.GetDemension('UNKNOWN'))
+# for i in range(100):
+#     print(p1.topList[i])
