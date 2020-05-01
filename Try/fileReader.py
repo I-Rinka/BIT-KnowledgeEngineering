@@ -77,11 +77,17 @@ class fileReader:
 p1 = fileReader(
     R'C:\Users\I_Rin\Documents\Dev\KnowledgeEn\One\data/1998-01-2003版-带音.txt', "19980101", "19980120")
 # p1.LocateStart("19980101-01-001-013")
+
 dic={}
 for i in range(10000):
     # p1.GetEntity()
     t=p1.ProcessWord()
     p1.UpdateDic(dic,t)
 
-print(dic)
+sortedList=list(dic.items())
+sortedList.sort(key=lambda parameter_list:parameter_list[1],reverse=True)
+for i in range(500):
+    print(sortedList[i])
+
+# print(dic)
     # print(p1.ProcessWord())
