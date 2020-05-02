@@ -17,10 +17,10 @@ class OneHotBuilder:
     def __init__(self, fileName, startDate, endDate):
         """初始化完后Run一下函数"""
         # 决定OneHot是多少维的向量
-        self.demension = 15000
+        self.demension = 5000
         self.fileName = fileName
-        self.startDate = startDate
-        self.endDate = endDate
+        self.__startDate = startDate
+        self.__endDate = endDate
         # self.topList=[]
         self.oneHotDic = {}
         self.__f = open(self.fileName, "r")
@@ -30,7 +30,7 @@ class OneHotBuilder:
         self.__Run()
 
     def __str__(self):
-        return "file:%s\nstart:%s\nend:%s\n" % (self.fileName, self.startDate, self.endDate)
+        return "file:%s\nstart:%s\nend:%s\n" % (self.fileName, self.__startDate, self.__endDate)
 
     # 功能函数：
     # 切分词语
@@ -96,6 +96,15 @@ class OneHotBuilder:
 
     # 建立字典(字典需要用已有的，输入的二元组也是已有的)，统计词频
     # 更新词典
+    def __UpdateOneHotDic(self, Dic, wordList):
+        for word in wordList:
+            if '/n' in word[1]:
+                if not word[0] in Dic:
+                    Dic[word[0]] = 1
+                else:
+                    Dic[word[0]] = Dic[word[0]]+1
+        return Dic
+        
     def __UpdateDic(self, Dic, wordList):
         for word in wordList:
             if '/n' in word[1]:
@@ -112,9 +121,9 @@ class OneHotBuilder:
         while True:
             line = self.__f.readline()
             # 输入输出停止/起始判断，通过两个开关来决定当前的状态
-            if line.startswith(self.startDate) and switch == False:
+            if line.startswith(self.__startDate) and switch == False:
                 switch = True
-            if line.startswith(self.endDate):
+            if line.startswith(self.__endDate):
                 switch2 = True
             elif switch2:
                 break
@@ -122,7 +131,7 @@ class OneHotBuilder:
             # 开始处理读入数据，以后添加扩展就在这里
             if switch:
                 t = self.__GetWord(line)  # 得到了可区分词性的二维列表
-                self.__UpdateDic(self.__dic1, t)
+                self.__UpdateOneHotDic(self.__dic1, t)
                 t2 = self.__GetLinkedWord(t)
                 t3 = self.__GetEntityWord(line)
                 self.linkedWord.extend(t2)
@@ -145,15 +154,15 @@ class OneHotBuilder:
             return self.oneHotDic['UNKNOWN']
 
 
-p1 = OneHotBuilder(
-    R'data/1998-01-2003版-带音.txt', "19980101", "19980120")
-# print(p1.oneHotDic)
-# print(p1.GetDemension('UNKNOWN'))
-# for i in range(100):
-#     print(p1.topList[i])
+# p1 = OneHotBuilder(
+#     R'data/1998-01-2003版-带音.txt', "19980101", "19980120")
+# # print(p1.oneHotDic)
+# # print(p1.GetDemension('UNKNOWN'))
+# # for i in range(100):
+# #     print(p1.topList[i])
+# # print(p1.linkedWord)
 # print(p1.linkedWord)
-print(p1.linkedWord)
-print('\n')
-print('\n')
-print('\n')
-print(p1.entityWord)
+# print('\n')
+# print('\n')
+# print('\n')
+# print(p1.entityWord)
