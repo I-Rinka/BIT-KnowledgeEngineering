@@ -62,11 +62,13 @@ theta = torch.rand_like(X[1])
 # theta相当于是逆向的，接下来要搞正向的
 # print(Y[0:10000])
 # 正向：
-veri = FR.OneHotBuilder(R'data/1998-01-2003版-带音.txt', "19980121", "19980125")
+# veri = FR.OneHotBuilder(R'data/1998-01-2003版-带音.txt', "19980121", "19980125")
 X2 = []
-for w in veri.linkedWord:
-    z = ConvertWordsToTensor(w, fr.oneHotDic)
-    X2.append(torch.from_numpy(z))
+# for w in veri.linkedWord:
+#     z = ConvertWordsToTensor(w, fr.oneHotDic)
+#     X2.append(torch.from_numpy(z))
+
+# print(len(X2))
 
 # Y2[i] = torch.sigmoid(theta.t().mm(X2[i]))
 
@@ -80,24 +82,25 @@ pltY = []
 # 最好建立一个entitiyWord的词典
 for j in range(cutOff):
     i = random.randint(0, len(Y))
-    theta = theta+0.01*((Y[i])*torch.sigmoid(theta.t().mm(X[i]))*X[i])
+    theta = theta+0.1*((Y[i])*torch.sigmoid(theta.t().mm(X[i]))*X[i])
     i2 = 0
     a = 0
     b = 0
     # EntityWord以后要放到字典，这里还有重大bug
     c = len(fr.entityWord)
-    for xe in X2:
+    for xe in X:
         y2 = torch.sigmoid(theta.t().mm(xe))
-        i2 += 1
         if y2 >= p5:
             b += 1
-            if veri.linkedWord[i2] in fr.entityWord:
+            if fr.linkedWord[i2] in fr.entityWord:
                 a += 1
+        i2 += 1
     accurate = a/b
     complete = a/c
     F1 = 2*accurate*complete/(accurate+complete)
     pltX.append(j)
     pltY.append(F1)
+    print(F1)
 
 plt.plot(pltX, pltY)
 plt.savefig("test.png", dpi=220)
