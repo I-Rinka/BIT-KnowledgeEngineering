@@ -53,7 +53,9 @@ class OneHotBuilder:
         else:
             return word[0:word.find('/')]
 
+    # 输出格式：[[词1,词2],[词2,词3]]
     def __GetLinkedWord(self, line):
+        """得到紧挨着的词|输入：文件读入的一行字符串|返回值：二维列表"""
         splt = line.split('  ')
         out = []
         out2 = []
@@ -81,7 +83,7 @@ class OneHotBuilder:
             i += 1
         return out
 
-    # 输出格式：[[词1,词2],[词1,词2]]
+    # 输出格式：[[词1,词2],[词3,词4]]
     def __GetEntityWord(self, line):
         """得到命名实体|输入：文件读入的一行字符串|返回值：二维列表"""
         out = []
@@ -107,6 +109,7 @@ class OneHotBuilder:
             if prePosition != -1:
                 prePosition += Position
         return out
+
     # 得到所有紧挨着的词语
     # 输出格式：[[词1,词2],[词1,词2]]
     # def __GetLinkedWord(self, processedWord):
@@ -137,6 +140,7 @@ class OneHotBuilder:
         #     return Dic
         # 输入命名实体等二维向量
 
+    #更新临时字典
     def __UpdateDic(self, wordList):
         for wordL in wordList:
             for word in wordL:
@@ -180,7 +184,7 @@ class OneHotBuilder:
         self.oneHotDic['UNKNOWN'] = ran
         return
 
-    def GetDemension(self, word):
+    def GetOneHotDemension(self, word):
         """输入：需要得到对应onehot向量下标的字符|返回：onehot向量的维度"""
         if word in self.oneHotDic:
             return self.oneHotDic[word]
@@ -191,7 +195,7 @@ class OneHotBuilder:
 # p1 = OneHotBuilder(
     # R'data/1998-01-2003版-带音.txt', "19980101", "19980120")
 # print(p1.linkedWord)
-# # print(p1.GetDemension('UNKNOWN'))
+# # print(p1.GetOneHotDemension('UNKNOWN'))
 # # for i in range(100):
 # #     print(p1.topList[i])
 # # print(p1.linkedWord)
