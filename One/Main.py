@@ -68,14 +68,13 @@ pltY = []
 # 初始化θ
 theta = np.zeros([l, 1], dtype=np.float)
 # 迭代次数
-cutOff = 50
+cutOff = 500
 for turn in range(cutOff):
     pltX.append(turn)
     yi = 0
     # 使用全梯度下降
     for Xi in X:
-        # j = random.randint(0, len(X)-1)
-        theta = Theta(theta, 0.05, Xi, Y[yi])
+        theta = Theta(theta, 0.01, Xi, Y[yi])
         yi += 1
     accu = 0
     num = 0
