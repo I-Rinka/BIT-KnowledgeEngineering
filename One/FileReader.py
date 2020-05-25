@@ -27,7 +27,7 @@ class OneHotBuilder:
         self.linkedWord = []
         self.entityWord = []
         self.__Run()
-
+`   `
     def __str__(self):
         return "file:%s\nstart:%s\nend:%s\n" % (self.fileName, self.__startDate, self.__endDate)
     # 功能函数：
