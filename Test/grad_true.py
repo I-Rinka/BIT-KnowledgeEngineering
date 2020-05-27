@@ -38,10 +38,22 @@ theta = torch.rand(3, 10, requires_grad=True)
 x = torch.randn(10)
 x2 = torch.randn(10)
 # print(softmax(x@theta.t())@y)
-J = (softmax(x@theta.t())@y+softmax(x@theta.t())@y).log()
+print(softmax(x@theta.t())@y.t())
+print(softmax(x@theta.t())@y)
+J = torch.zeros(1)
+J += (softmax(x@theta.t())@y.t()).log()
+J += (softmax(x2@theta.t())@y.t()).log()
+print(J)
 J.backward()
 # print(theta.grad)
 # theta.data = theta-0.01*theta.grad.data
-J2=theta.grad.data
-J2.backward()
 print(theta.grad)
+print(theta.data)
+print(J.data)
+for i in range(20):
+    pltX.append(i)
+    pltY.append(J.data)
+
+
+plt.plot(pltX, pltY)
+plt.show()
