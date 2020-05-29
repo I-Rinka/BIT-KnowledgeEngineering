@@ -18,7 +18,7 @@ import torch
 import matplotlib.pyplot as plt
 
 
-def __line_processor(line):
+def LineProcessor(line):
     spt = line.split('  ')
     BIO_line = []
     BIO_switch1 = False
@@ -39,16 +39,16 @@ def __line_processor(line):
     return BIO_line
 
 
-def __GetBIOSet(data_set):
+def GetBIOSet(data_set):
     BIO_SET = []
     for line in data_set:
-        bio_line = __line_processor(line)  # 得到词和对应的BIO标签
+        bio_line = LineProcessor(line)  # 得到词和对应的BIO标签
         if bio_line:
             BIO_SET.append(bio_line)
     return BIO_SET
 
 
-def __BIOSetToTensorXY(BIO_SET, VE):
+def BIOSetToTensorXY(BIO_SET, VE):
     '''
     将词和对应的BIO分类都转换为向量
     每一个元素的第一项为X的向量(同时拼接了前中后词)
@@ -72,7 +72,11 @@ def __BIOSetToTensorXY(BIO_SET, VE):
 
 
 def TransFileIntoTensor(file_path, vector_essential):
+    '''
+    唯一对外开放的函数
+    输入文件位置后，得到对应的词向量和对应分类的元组列表
+    '''
     data = FP.file_read(file_path)
-    BIO_set = __GetBIOSet(data)
-    XY_Tensor = __BIOSetToTensorXY(BIO_set, vector_essential)
+    BIO_set = GetBIOSet(data)
+    XY_Tensor = BIOSetToTensorXY(BIO_set, vector_essential)
     return XY_Tensor  # 这是一大坨集合

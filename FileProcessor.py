@@ -68,9 +68,9 @@ def file_write_cover(path, content_string):
     file.close()
 
 
-def code_convert(input_path, input_code, output_code="utf-8", output_path="./convert_out.txt"):
+def code_convert(input_path, input_code, output_code="utf-8", output_path="./converted_out.txt"):
     '''
-    转换字符集编码，比如输入gbk，输出utf8
+    转换文件字符集编码，默认输出utf8
     '''
     file = open(input_path, "r", encoding=input_code)
     result = []
