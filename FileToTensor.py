@@ -25,16 +25,17 @@ def __line_processor(line):
     if len(spt) >= 1:
         if spt and spt[0]:
             for w in spt:
-                if w[0] == '[':
-                    BIO_line.append([w[1:w.find('/')], 0])
-                    BIO_switch1 = True
-                else:
-                    if BIO_switch1 == False:
-                        BIO_line.append([w[0:w.find('/')], 1])
+                if 'm' not in w and 'w' not in w:  # 过滤掉所有符号
+                    if w[0] == '[':
+                        BIO_line.append([w[1:w.find('/')], 0])
+                        BIO_switch1 = True
                     else:
-                        BIO_line.append([w[0:w.find('/')], 2])
-                        if ']' in w:
-                            BIO_switch1 = False
+                        if BIO_switch1 == True:
+                            BIO_line.append([w[0:w.find('/')], 1])
+                            if ']' in w:
+                                BIO_switch1 = False
+                        else:
+                            BIO_line.append([w[0:w.find('/')], 2])
     return BIO_line
 
 
@@ -66,9 +67,7 @@ def __BIOSetToTensorXY(BIO_SET, VE):
                 aftherWord = VE.GetWordVector(bio_line[i+1][0])
             nowWord = VE.GetWordVector(bio_line[i][0])
             vec = torch.cat([preWord[0], nowWord[0], aftherWord[0]])
-            y = torch.zeros(3, dtype=torch.float32)
-            y[bio_line[i][1]] = 1
-            X_Y_Tensor.append([vec, y])
+            X_Y_Tensor.append([vec, bio_line[i][1]])
     return X_Y_Tensor
 
 

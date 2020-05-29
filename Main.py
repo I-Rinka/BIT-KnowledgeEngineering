@@ -24,79 +24,84 @@ verify_set_path = "C:/Users/I_Rin/Documents/Dev/College_KnowledgeEngineering/ver
 
 VE = VG.vector_essential(word_vector_path)
 
-theta = torch.randn(3, 150)
+# theta = torch.randn(3, 150)
 
-TrainSet_Vector = FTT.TransFileIntoTensor(train_set_path, VE)
+TrainSet_Vector = FTT.TransFileIntoTensor(train_set_path, VE)  # 获取两个向量集
 VerifySet_Vector = FTT.TransFileIntoTensor(verify_set_path, VE)
 
-
-def softmax(X):
-    X_exp = X.exp()
-    partition = X_exp.sum()
-    return X_exp / partition
+batch_size = 100
 
 
-def J_part(X, Y):
-    return (softmax(X@theta.t())@Y).log()
+def GetBatchVector(vector_set):
+    base = random.randint(0, len(vector_set)-batch_size)
+    Y = torch.ones(batch_size, dtype=torch.long)
+    X = vector_set[base+batch_size-1][0].unsqueeze(0)
+    Y[batch_size-1] = vector_set[base+batch_size-1][1]
+    for i in range(batch_size-1):
+        X = torch.cat((X, vector_set[base+i][0].unsqueeze(0)))
+        Y[i] = vector_set[base+i][1]
+    return X, Y
 
 
-theta = torch.rand(3, 150, requires_grad=True)
+class MultiClassify(torch.nn.Module):
+    def __init__(self):
+        super(MultiClassify, self).__init__()
+        self.theta = torch.nn.Linear(150, 3)
 
+    def forward(self, x):
+        x = self.theta(x)
+        return x
+
+
+epoch = 20
 
 pltX = []
 pltY = []
-
-epoch = 50
-
-lr = 0.1
-batch_range = 2000
-
-
-def Train_One_Epoch():
-    add_base = random.randint(0, len(TrainSet_Vector)-batch_range)
-    J = torch.zeros(1)
-    for i in range(batch_range):
-        pass
-        J += J_part(TrainSet_Vector[add_base+i][0],
-                    TrainSet_Vector[add_base+i][1])
-    J.backward()
-    theta.data = theta-0.01*theta.grad.data  # 梯度下降
-    return J.data
-
-
-def Identify(XY):
-    soft_ans = softmax(XY[0]@theta.t())
-    if XY[1].max(0) == soft_ans.max(0):
-        return True
-
-    return False
-
+pltY2 = []
 
 if __name__ == "__main__":
+
+    net = MultiClassify()
+    optimizer = torch.optim.SGD(net.parameters(), lr=0.2)
+    loss_function = torch.nn.CrossEntropyLoss()
     for i in range(epoch):
-        JD = Train_One_Epoch()
-        pltX.append(i)
-        pltY.append(JD)
-        TP = 0
-        TPFP = 0
-        TPFN = 0
-        for xy in VerifySet_Vector:
-            judge = Identify(xy)
-            if xy[1][0] == 1 or xy[1][1] == 1:  # 真实情况下为1的样本
-                if judge:
-                    TP += 1
-                TPFN += 1
-            if judge:
-                TPFP += 1
-        if TPFP == 0 or TPFN == 0:
-            F1 = -1
-        else:
-            precision = TP/TPFP
-            recall = TP/TPFN
-            F1 = 2*precision*recall/(precision+recall)
-        pltX.append(i)
-        pltY.append(F1)
-        print('\nEpoch:{} Precision:{} Recall:{} F1_rate:{}\n----------------------------\n'.format(i,
-                                                                                                    precision, recall, F1))
+        X, Y = GetBatchVector(TrainSet_Vector)
+        out = net(X)
+        loss = loss_function(out, Y)
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+        if i % 2 == 0:
+            num = 0
+            right = 0
+            TP = 0
+            TPFP = 0
+            TPFN = 0
+            for vec_xy in VerifySet_Vector:
+                prediction = net(vec_xy[0])
+                num += 1
+                if prediction.argmax() == vec_xy[1]:
+                    right += 1
+                    if prediction.argmax() == 0 or prediction.argmax() == 1:
+                        TP += 1
+                if vec_xy[1] == 0 or vec_xy[1] == 1:
+                    TPFN += 1
+                if prediction.argmax() == 0 or prediction.argmax() == 1:
+                    TPFP += 1
+                if TPFN == 0 or TPFP == 0 or TP == 0:
+                    F1 = 0
+                else:
+                    F1 = 2*(TP/TPFN)*(TP/TPFP)/((TP/TPFN)+(TP/TPFP))
+                accuracy = right/num
+                pltY.append(accuracy)
+                pltY2.append(F1)
+                pltX.append(i)
+            print("Epoch:{} Accuracy:{} F1:{}".format(i, accuracy, F1))
+
     plt.plot(pltX, pltY)
+    plt.savefig("test3.png", dpi=220)
+    plt.show()
+    plt.plot(pltX, pltY2)
+    plt.savefig("test4.png", dpi=220)
     plt.show()
