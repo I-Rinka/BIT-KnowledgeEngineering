@@ -3,7 +3,7 @@
 '''
 @File    :   FileToTensor.py
 @Time    :   2020/05/27 23:37:41
-@Author  :   Rinka 
+@Author  :   Rinka
 @Contact :   I_Rinka@outlook.com
 @License :   (C)Copyright 2019-2020, BIT_Rinka
 @Desc    :   None
@@ -18,65 +18,82 @@ import torch
 import matplotlib.pyplot as plt
 
 
-def LineProcessor(line):
+def ConvertOneSentence(line):
+    pass
     spt = line.split('  ')
-    BIO_line = []
+    Word = []
+    Y = []
     BIO_switch1 = False
     if len(spt) >= 1:
         if spt and spt[0]:
             for w in spt:
-                if 'm' not in w and 'w' not in w:  # 过滤掉所有符号
-                    if w[0] == '[':
-                        BIO_line.append([w[1:w.find('/')], 0])
-                        BIO_switch1 = True
+                if w[0] == '[':
+                    Word.append(w[1:w.find('/')])
+                    Y.append(0)
+                    BIO_switch1 = True
+                else:
+                    if BIO_switch1 == True:
+                        Word.append(w[0:w.find('/')])
+                        Y.append(1)
+                        if ']' in w:
+                            BIO_switch1 = False
                     else:
-                        if BIO_switch1 == True:
-                            BIO_line.append([w[0:w.find('/')], 1])
-                            if ']' in w:
-                                BIO_switch1 = False
-                        else:
-                            BIO_line.append([w[0:w.find('/')], 2])
-    return BIO_line
+                        Word.append(w[0:w.find('/')])
+                        Y.append(2)
+    return Word, Y
 
 
-def GetBIOSet(data_set):
-    BIO_SET = []
-    for line in data_set:
-        bio_line = LineProcessor(line)  # 得到词和对应的BIO标签
-        if bio_line:
-            BIO_SET.append(bio_line)
-    return BIO_SET
+def GetXYList(lines, delet_invalid=False):
+    pass
+    X_SET = []
+    Y_SET = []
+    for line in lines:
+        X, Y = ConvertOneSentence(line)
+        if not delet_invalid:
+            if Y:
+                X_SET.append(X)
+                Y_SET.append(Y)
+        if delet_invalid:
+            if Y:
+                if 0 in Y:
+                    X_SET.append(X)
+                    Y_SET.append(Y)
+    return X_SET, Y_SET
 
 
-def BIOSetToTensorXY(BIO_SET, VE):
-    '''
-    将词和对应的BIO分类都转换为向量
-    每一个元素的第一项为X的向量(同时拼接了前中后词)
-    第二项为Y的向量    
-    '''
-    X_Y_Tensor = []
-    for bio_line in BIO_SET:
-        for i in range(len(bio_line)):
+def GetSentensVector(X_SET, VE):
+    pass
+    sentence = []
+    for X in X_SET:
+        bed = torch.zeros(len(X), 150)
+        i = 0
+        for word in X:
             if i == 0:
                 preWord = VE.GetWordVector("Unknow")
             else:
-                preWord = VE.GetWordVector(bio_line[i-1][0])
-            if i == len(bio_line)-1:
+                preWord = VE.GetWordVector(X[i-1])
+            if i == len(X)-1:
                 aftherWord = VE.GetWordVector("Unknow")
             else:
-                aftherWord = VE.GetWordVector(bio_line[i+1][0])
-            nowWord = VE.GetWordVector(bio_line[i][0])
-            vec = torch.cat([preWord[0], nowWord[0], aftherWord[0]])
-            X_Y_Tensor.append([vec, bio_line[i][1]])
-    return X_Y_Tensor
+                aftherWord = VE.GetWordVector(X[i+1])
+            nowWord = VE.GetWordVector(word)
+            bed[i] += torch.cat([preWord[0], nowWord[0], aftherWord[0]])
+            i += 1
+        sentence.append(bed)
+    return bed
 
 
-def TransFileIntoTensor(file_path, vector_essential):
+def TransFileIntoTensor(file_path, vector_essential, delet_invalid=False):
     '''
     唯一对外开放的函数
     输入文件位置后，得到对应的词向量和对应分类的元组列表
     '''
     data = FP.file_read(file_path)
-    BIO_set = GetBIOSet(data)
-    XY_Tensor = BIOSetToTensorXY(BIO_set, vector_essential)
-    return XY_Tensor  # 这是一大坨集合
+    X_SET, Y_SET = GetXYList(data)
+    X_VEC = GetSentensVector(X_SET, vector_essential)
+    Y_VEC = []
+    for Y in Y_SET:
+        vec = torch.tensor(Y)
+        Y_VEC.append(vec)
+
+    return X_VEC, Y_VEC  # 这是一大坨集合
