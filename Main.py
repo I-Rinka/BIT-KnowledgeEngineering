@@ -30,7 +30,8 @@ TrainSet_X, TrainSet_Y = FTT.TransFileIntoTensor(
 VerifySet_Vector, VerifySet_Y = FTT.TransFileIntoTensor(
     verify_set_path, vector_set)
 
-epoch = 25  # 迭代轮数
+epoch = 30  # 迭代轮数
+batch_size = 400
 
 
 class MultiClassify(torch.nn.Module):  # 建立神经网络，是简单的线性模型
@@ -52,15 +53,14 @@ if __name__ == "__main__":
     optimizer = torch.optim.SGD(net.parameters(), lr=0.05)
     loss_function = torch.nn.CrossEntropyLoss()
     for turn in range(epoch):
-        i = 0
-        for X in TrainSet_X:
+        base = random.randint(0, len(TrainSet_X)-batch_size)
+        for i in range(batch_size):
             pass
-            out = net(X)
-            loss = loss_function(out, TrainSet_Y[i])
+            out = net(TrainSet_X[base+i])
+            loss = loss_function(out, TrainSet_Y[base+i])
             optimizer.zero_grad()
-            loss.backward()
+            loss.backward(retain_graph=True)
             optimizer.step()
-            i += 1
 
         num = 0
         right = 0
@@ -71,16 +71,33 @@ if __name__ == "__main__":
         # 验证
         for X in VerifySet_Vector:
             prediction = net(X)
-            num += 1
-            max_dim = prediction.argmax()
-            if max_dim == VerifySet_Y[i]:
-                right += 1
-                if max_dim == 0 or max_dim == 1:
+            j = 0
+            switch = False
+            for smax in prediction:
+                atom = smax.argmax()
+                if atom == 0:
+                    TPFP += 1
+                if VerifySet_Y[i][j] == 0:
+                    TPFN += 1
+
+                if switch and not atom == VerifySet_Y[i][j]:
+                    pass
+                    TP -= 1
+                    switch = False
+
+                elif switch and atom == VerifySet_Y[i][j] and atom == 2:
+                    switch = False
+
+                elif not switch and atom == VerifySet_Y[i][j] and atom == 0:
+                    pass
+                    switch = True
                     TP += 1
-            if VerifySet_Y[i] == 0 or VerifySet_Y[i] == 1:
-                TPFN += 1
-            if max_dim == 0 or max_dim == 1:
-                TPFP += 1
+
+                if atom == VerifySet_Y[i][j]:
+                    right += 1
+
+                j += 1
+                num += 1
             i += 1
 
         if TPFN == 0 or TPFP == 0 or TP == 0:

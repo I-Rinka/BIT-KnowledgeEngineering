@@ -80,7 +80,7 @@ def GetSentensVector(X_SET, VE):
             bed[i] += torch.cat([preWord[0], nowWord[0], aftherWord[0]])
             i += 1
         sentence.append(bed)
-    return bed
+    return sentence
 
 
 def TransFileIntoTensor(file_path, vector_essential, delet_invalid=False):
@@ -89,7 +89,7 @@ def TransFileIntoTensor(file_path, vector_essential, delet_invalid=False):
     输入文件位置后，得到对应的词向量和对应分类的元组列表
     '''
     data = FP.file_read(file_path)
-    X_SET, Y_SET = GetXYList(data)
+    X_SET, Y_SET = GetXYList(data, delet_invalid=delet_invalid)
     X_VEC = GetSentensVector(X_SET, vector_essential)
     Y_VEC = []
     for Y in Y_SET:
